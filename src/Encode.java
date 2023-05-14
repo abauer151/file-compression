@@ -1,5 +1,7 @@
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
@@ -15,6 +17,7 @@ public class Encode
         HuffmanTree huffmanTree = new HuffmanTree(counts);
 
         //Map each character to an encoding
+        Map<Character, String> encodings = huffmanTree.mapEncodings();
 
         //Use Huffman Tree encodings to turn text file into binary
 
@@ -40,5 +43,18 @@ public class Encode
             }
         }
         return counts;
+    }
+
+    public static void writeEncodings(Map<Character, String> encodings, File input, File output) throws FileNotFoundException
+    {
+        Scanner scanner = new Scanner(input);
+        PrintWriter out = new PrintWriter(output);
+        scanner.useDelimiter("");
+
+        while(scanner.hasNext() || scanner.hasNextLine())
+        {
+            Character next = scanner.next().charAt(0);
+            out.write(encodings.get(next));
+        }
     }
 }

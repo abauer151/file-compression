@@ -10,8 +10,9 @@ public class Main
         System.out.println(counts);
         HuffmanTree huffmanTree = new HuffmanTree(counts);
         Map<Character, String> map = huffmanTree.mapEncodings();
-        System.out.println(map.toString());
-        System.out.println(huffmanTree.generateDot());
+        Encode.writeEncodings(map, new File("input.txt"), new File("output.txt"));
+//        System.out.println(map.toString());
+//        System.out.println(huffmanTree.generateDot());
 //
 //        FileInputStream fis = new FileInputStream(new File("input.txt"));
 //        System.out.println((char) fis.read());
