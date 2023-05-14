@@ -76,15 +76,25 @@ public class HuffmanTree
 
     }
 
-    public Map<Character, Integer> mapEncodings()
+    public Map<Character, String> mapEncodings()
     {
-        Map<Character, Integer> encodings = new HashMap<>();
-
+        Map<Character, String> encodings = new HashMap<>();
+        addEncodings(root, new StringBuilder(), encodings);
+        return encodings;
     }
 
-    private void addEncodings(Node start)
+    private void addEncodings(Node start, StringBuilder soFar, Map<Character, String> encodings)
     {
-        //ToDo
+        if(start instanceof LeafNode)
+        {
+            encodings.put(((LeafNode) start).character, soFar.toString());
+            return;
+        }
+
+        StringBuilder left = new StringBuilder(soFar.toString() + "0");
+        StringBuilder right = new StringBuilder(soFar.toString() + "1");
+        addEncodings(start.leftChild, left, encodings);
+        addEncodings(start.rightChild, right, encodings);
     }
 
     public class Node
