@@ -46,17 +46,25 @@ public class FileCompression
     {
         Scanner scanner = new Scanner(input);
         PrintWriter out = new PrintWriter(output);
+        StringBuilder binary = new StringBuilder();
         scanner.useDelimiter("");
 
         while(scanner.hasNext() || scanner.hasNextLine())
         {
             Character next = scanner.next().charAt(0);
-            out.write(encodings.get(next));
+            binary.append(encodings.get(next));
         }
+        System.out.println(binary);
+
+        for(int i = 8; i < binary.length(); i += 8)
+        {
+            out.write((char)Integer.parseInt(binary.substring(i - 8, i), 2));
+        }
+
         out.close();
     }
 
-    public static void decode(Map<Character, String> encodings, File binaryEncoding, File output) throws IOException
+    public static void decode(Map<Character, String> encodings, File binaryEncoding, File output) throws FileNotFoundException
     {
         Map<String, Character> decodings = new HashMap<>();
 
@@ -65,21 +73,37 @@ public class FileCompression
 
         Scanner scanner = new Scanner(binaryEncoding);
         StringBuilder str = new StringBuilder();
-        ByteOutputStream out = new ByteOutputStream(output);
+        PrintWriter out = new PrintWriter(output);
 
         scanner.useDelimiter("");
 
         while(scanner.hasNext() || scanner.hasNextLine())
         {
             Character next = scanner.next().charAt(0);
-            str.append(next);
-            if(decodings.containsKey(str.toString()))
+            String binary = FileCompression.byteify(Integer.toBinaryString(next));
+            str.append(binary);
+        }
+        System.out.println(str);
+        scanner.close();
+
+        int start = 0;
+        for(int i = 1; i < str.length(); i++)
+        {
+            if(decodings.containsKey(str.substring(start, i)))
             {
-                out.write(decodings.get(str.toString()));
-                str = new StringBuilder();
+                out.write(decodings.get(str.substring(start, i)));
+                start = i;
+                i++;
             }
         }
-        scanner.close();
         out.close();
+    }
+
+    public static String byteify(String code)
+    {
+        String ret = code;
+        while (ret.length() != 8)
+            ret = "0" + ret;
+        return ret;
     }
 }

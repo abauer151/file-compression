@@ -34,7 +34,6 @@ public class HuffmanTree
             var next = it.next();
             minPQ.add(new LeafNode(next.getKey(), next.getValue()));
         }
-        //System.out.println(minPQ.toString());
 
         while(!minPQ.isEmpty())
         {

@@ -1,22 +1,30 @@
 import java.io.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 
 public class Main
 {
     public static void main(String[] args) throws IOException
     {
-        Map<Character, Integer> counts = FileCompression.count(new File("input.txt"));
-        System.out.println(counts);
+        //System.out.println((char)Integer.parseInt("hhh", 2));
+//        byte b = (byte) 01100011;
+//        char c = (char)b;
+//        byte back = (byte)c;
+        //System.out.println(Integer.toBinaryString('c'));
+
+
+        File in = new File("input.txt");
+        File bin = new File("binary.txt");
+        File out = new File("output.txt");
+        Map<Character, Integer> counts = FileCompression.count(in);
         HuffmanTree huffmanTree = new HuffmanTree(counts);
         Map<Character, String> map = huffmanTree.mapEncodings();
-        FileCompression.writeEncodings(map, new File("input.txt"), new File("binary.dat"));
-        System.out.println(map.toString());
-        System.out.println(huffmanTree.generateDot());
-        FileCompression.decode(map, new File("binary.dat"), new File("output.txt"));
+        FileCompression.writeEncodings(map, in, bin);
+        FileCompression.decode(map, bin, out);
 
-//
-//        FileInputStream fis = new FileInputStream(new File("input.txt"));
-//        System.out.println((char) fis.read());
     }
+
 }
