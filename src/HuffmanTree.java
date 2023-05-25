@@ -1,13 +1,26 @@
 import java.util.*;
 
+/**
+ * Class representing a Huffman Tree used for Huffman Encoding
+ * @author Aidan Bauer
+ */
 public class HuffmanTree
 {
+    //Root of the tree
     private InternalNode root;
+
+    /**
+     * Builds a Huffman Tree using a map of character frequency
+     * @param counts
+     */
     public HuffmanTree(Map<Character, Integer> counts)
     {
         buildHuffmanTree(counts);
     }
 
+    /**
+     * Comparator of Huffman Tree Nodes by frequency and tiebreaker is lexicographical order
+     */
     public class HuffmanCmp implements Comparator<Node>
     {
         @Override
@@ -22,28 +35,37 @@ public class HuffmanTree
         }
     }
 
+    /**
+     * Using a map of character frequencies, builds a Huffman Tree
+     * @param counts
+     */
     public void buildHuffmanTree(Map<Character, Integer> counts)
     {
         Set<Map.Entry<Character, Integer>> set = counts.entrySet();
         PriorityQueue<Node> minPQ = new PriorityQueue<>(new HuffmanCmp());
         Iterator<Map.Entry<Character, Integer>> it = set.iterator();
 
-
+        //Adds characters into priority queue
         while(it.hasNext())
         {
             var next = it.next();
             minPQ.add(new LeafNode(next.getKey(), next.getValue()));
         }
 
+        //Empties priority queue to build tree
         while(!minPQ.isEmpty())
         {
+            //New internal node with children as the next two items in the PQ
             InternalNode parent = new InternalNode(minPQ.remove(), minPQ.remove());
 
+            //Connect to root of Huffman Tree and finish
             if(minPQ.size() == 0)
             {
                 root = parent;
                 return;
             }
+
+            //Add new node back into PQ
             minPQ.add(parent);
         }
     }
@@ -60,6 +82,12 @@ public class HuffmanTree
         return dot.toString() + "}";
     }
 
+    /**
+     * Recursive helper method for generateDot()
+     * Traverses down and adds entries to dot string
+     * @param node
+     * @param dot
+     */
     private void traverseDown(Node node, StringBuilder dot)
     {
         if(node.leftChild != null)
@@ -75,6 +103,10 @@ public class HuffmanTree
 
     }
 
+    /**
+     *
+     * @return binary encodings
+     */
     public Map<Character, String> mapEncodings()
     {
         Map<Character, String> encodings = new HashMap<>();
@@ -82,20 +114,32 @@ public class HuffmanTree
         return encodings;
     }
 
+    /**
+     * Recursive helper method for mapEncodings()
+     *
+     * @param start
+     * @param soFar
+     * @param encodings
+     */
     private void addEncodings(Node start, StringBuilder soFar, Map<Character, String> encodings)
     {
+        //If leafNode, add encoding and exit
         if(start instanceof LeafNode)
         {
             encodings.put(((LeafNode) start).character, soFar.toString());
             return;
         }
 
-        StringBuilder left = new StringBuilder(soFar.toString() + "0");
-        StringBuilder right = new StringBuilder(soFar.toString() + "1");
+        //Traverse left, add a '0', traverse right, add a '1'
+        StringBuilder left = new StringBuilder(soFar + "0");
+        StringBuilder right = new StringBuilder(soFar + "1");
         addEncodings(start.leftChild, left, encodings);
         addEncodings(start.rightChild, right, encodings);
     }
 
+    /**
+     * Custom node class
+     */
     public class Node
     {
         protected int data;
@@ -128,6 +172,9 @@ public class HuffmanTree
         }
     }
 
+    /**
+     * Custom node class for nodes carrying character frequency information
+     */
     public class LeafNode extends Node
     {
         private InternalNode parent;
@@ -150,6 +197,10 @@ public class HuffmanTree
         }
     }
 
+    /**
+     * Custom node class for internal nodes carrying the data for the sum of the
+     * data in its children
+     */
     public class InternalNode extends Node
     {
         public InternalNode(Node leftChild, Node rightChild)

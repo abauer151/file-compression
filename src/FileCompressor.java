@@ -3,12 +3,22 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
 
-public class FileCompression
+/**
+ * Static class that contains methods used in file compression and decompression
+ * @author Aidan Bauer
+ */
+public class FileCompressor
 {
-    public static byte[] encode(File input) throws IOException
+    /**
+     * Encodes the input text in the input file
+     * @param input
+     * @param encryptedFileName
+     * @throws IOException
+     */
+    public static void encode(File input, String encryptedFileName) throws IOException
     {
         //Count the occurrences of each character in text file
-        Map<Character, Integer> counts = FileCompression.count(input);
+        Map<Character, Integer> counts = FileCompressor.count(input);
 
         //Build Huffman Tree from counts
         HuffmanTree huffmanTree = new HuffmanTree(counts);
@@ -17,21 +27,33 @@ public class FileCompression
         Map<Character, String> encodings = huffmanTree.mapEncodings();
 
         //Use Huffman Tree encodings to turn text file into binary
+        File encrypted = new File("Desktop/" + encryptedFileName + ".txt");
+        encrypted.createNewFile();
+        writeEncodings(encodings, input, encrypted);
 
-
-        return null;
     }
 
-    public static Map<Character, Integer> count(File input) throws IOException
+    /**
+     * Private helper method that reads a File and maps the each character to the number
+     * of times it occurred in the file
+     * @param input
+     * @return
+     * @throws IOException
+     */
+    private static Map<Character, Integer> count(File input) throws IOException
     {
-        //count occurrences of each character in file
+        //Count occurrences of each character in file
         Map<Character, Integer> counts = new HashMap<>();
 
         Scanner scanner = new Scanner(input);
         scanner.useDelimiter("");
+
+        //Scans entire file, character by character
         while(scanner.hasNext() || scanner.hasNextLine())
         {
             Character next = scanner.next().charAt(0);
+
+            //Maps characters
             if(counts.containsKey(next))
                 counts.put(next, counts.get(next) + 1);
             else
@@ -42,6 +64,13 @@ public class FileCompression
         return counts;
     }
 
+    /**
+     * Write the text file into encoding in the given outpur file
+     * @param encodings
+     * @param input
+     * @param output
+     * @throws FileNotFoundException
+     */
     public static void writeEncodings(Map<Character, String> encodings, File input, File output) throws FileNotFoundException
     {
         Scanner scanner = new Scanner(input);
@@ -49,17 +78,22 @@ public class FileCompression
         StringBuilder binary = new StringBuilder();
         scanner.useDelimiter("");
 
+        //Read original file
         while(scanner.hasNext() || scanner.hasNextLine())
         {
             Character next = scanner.next().charAt(0);
             binary.append(encodings.get(next));
         }
-        System.out.println(binary);
 
+        //Take 8 bits of binary at a time, that we encoded from the original file, and write to the
+        // output file as the character representation to save space
         for(int i = 8; i < binary.length(); i += 8)
         {
             out.write((char)Integer.parseInt(binary.substring(i - 8, i), 2));
         }
+
+        //Write remainder of binary string as regular binary
+        out.write(binary.substring(binary.length() - (binary.length() % 8), binary.length() - 1));
 
         out.close();
     }
@@ -80,10 +114,9 @@ public class FileCompression
         while(scanner.hasNext() || scanner.hasNextLine())
         {
             Character next = scanner.next().charAt(0);
-            String binary = FileCompression.byteify(Integer.toBinaryString(next));
+            String binary = FileCompressor.byteify(Integer.toBinaryString(next));
             str.append(binary);
         }
-        System.out.println(str);
         scanner.close();
 
         int start = 0;
@@ -101,9 +134,8 @@ public class FileCompression
 
     public static String byteify(String code)
     {
-        String ret = code;
-        while (ret.length() != 8)
-            ret = "0" + ret;
-        return ret;
+        while(code.length() != 8)
+            code = "0" + code;
+        return code;
     }
 }
