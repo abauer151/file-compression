@@ -26,11 +26,7 @@ public class FileCompressor
         //Map each character to an encoding
         Map<Character, String> encodings = huffmanTree.mapEncodings();
 
-        //Use Huffman Tree encodings to turn text file into binary
-        File encrypted = new File("Desktop/" + encryptedFileName + ".txt");
-        encrypted.createNewFile();
-        writeEncodings(encodings, input, encrypted);
-
+        writeEncodings(counts, encodings, input, encryptedFileName);
     }
 
     /**
@@ -40,7 +36,7 @@ public class FileCompressor
      * @return
      * @throws IOException
      */
-    private static Map<Character, Integer> count(File input) throws IOException
+    public static Map<Character, Integer> count(File input) throws IOException
     {
         //Count occurrences of each character in file
         Map<Character, Integer> counts = new HashMap<>();
@@ -65,74 +61,118 @@ public class FileCompressor
     }
 
     /**
-     * Write the text file into encoding in the given outpur file
+     * Write the text file into encoding in the given output file
+     * @param counts
      * @param encodings
      * @param input
-     * @param output
+     * @param filename name of new output file
      * @throws FileNotFoundException
      */
-    public static void writeEncodings(Map<Character, String> encodings, File input, File output) throws FileNotFoundException
+    private static void writeEncodings(Map<Character, Integer> counts, Map<Character, String> encodings, File input, String filename) throws FileNotFoundException, UnsupportedEncodingException
     {
+        //Reads input file
         Scanner scanner = new Scanner(input);
-        PrintWriter out = new PrintWriter(output);
-        StringBuilder binary = new StringBuilder();
         scanner.useDelimiter("");
 
-        //Read original file
+        //Writes encodings to file
+        PrintWriter out = new PrintWriter("/Users/aidanbauer/Desktop/" + filename + ".txt", "UTF-8");
+
+        //String of binary encodings
+        StringBuilder binary = new StringBuilder();
+
+        //Read input file
         while(scanner.hasNext() || scanner.hasNextLine())
         {
             Character next = scanner.next().charAt(0);
+
+            //Turn into binary using encodings
             binary.append(encodings.get(next));
         }
+        System.out.println(binary);
 
-        //Take 8 bits of binary at a time, that we encoded from the original file, and write to the
-        // output file as the character representation to save space
-        for(int i = 8; i < binary.length(); i += 8)
-        {
+//        //Writes character frequency information so the file can be decoded
+//        for(Map.Entry<Character, Integer> entry: counts.entrySet())
+//            out.write((char)Integer.parseInt(String.valueOf(entry.getKey())) + "" + entry.getValue());
+
+        //Take 8 bits of binary at a time, that we encoded from the input file, and write to the
+        // output file as the character representation of each byte to save space
+        for(int i = 8; i <= binary.length(); i += 8)
             out.write((char)Integer.parseInt(binary.substring(i - 8, i), 2));
-        }
 
-        //Write remainder of binary string as regular binary
-        out.write(binary.substring(binary.length() - (binary.length() % 8), binary.length() - 1));
+        //Write remainder of binary string as the last character
+        out.write((char)Integer.parseInt("1" + binary.substring(binary.length() - (binary.length() % 8), binary.length()),2));
 
         out.close();
     }
 
-    public static void decode(Map<Character, String> encodings, File binaryEncoding, File output) throws FileNotFoundException
+    /**
+     * Decodes a compressed file using counts
+     * @param counts frequency of character occurrences in original file
+     * @param binaryEncoding file to be decompressed
+     * @param output location to decompress file
+     * @throws FileNotFoundException
+     */
+    public static void decode(Map<Character, Integer> counts, File binaryEncoding, File output) throws FileNotFoundException
     {
-        Map<String, Character> decodings = new HashMap<>();
+        //Uses counts to generate encodings
+        HuffmanTree huffmanTree = new HuffmanTree(counts);
+        Map<Character, String> encodings = huffmanTree.mapEncodings();
 
+        //Maps reverses encodings map
+        Map<String, Character> decodings = new HashMap<>();
         for(Map.Entry<Character, String> entry : encodings.entrySet())
             decodings.put(entry.getValue(), entry.getKey());
 
+        //Reads compressed file
         Scanner scanner = new Scanner(binaryEncoding);
-        StringBuilder str = new StringBuilder();
-        PrintWriter out = new PrintWriter(output);
-
         scanner.useDelimiter("");
 
+        //Write uncompressed text to output
+        PrintWriter out = new PrintWriter(output);
+
+        //Uncompress into binary
+        StringBuilder binary = new StringBuilder();
+
+        //Read compressed file
         while(scanner.hasNext() || scanner.hasNextLine())
         {
+            //Read character by character
             Character next = scanner.next().charAt(0);
-            String binary = FileCompressor.byteify(Integer.toBinaryString(next));
-            str.append(binary);
-        }
-        scanner.close();
 
-        int start = 0;
-        for(int i = 1; i < str.length(); i++)
-        {
-            if(decodings.containsKey(str.substring(start, i)))
+            //Last character
+            if(!scanner.hasNext())
             {
-                out.write(decodings.get(str.substring(start, i)));
-                start = i;
-                i++;
+                //Decompress last character in a different way
+                binary.append(Integer.toBinaryString(next).substring(1));
+                scanner.close();
+                break;
+            }
+
+            //Uncompress character to binary
+            String code = FileCompressor.byteify(Integer.toBinaryString(next));
+            binary.append(code);
+        }
+        System.out.println(binary);
+
+        //Decode binary to original data
+        for(int leftBound = 0, rightBound = 1; rightBound <= binary.length(); rightBound++)
+        {
+            if(decodings.containsKey(binary.substring(leftBound, rightBound)))
+            {
+                out.write(decodings.get(binary.substring(leftBound, rightBound)));
+                leftBound = rightBound;
             }
         }
         out.close();
     }
 
-    public static String byteify(String code)
+    /**
+     * Private helper that makes a byte of binary have a length of 8
+     * if it does not already
+     * @param code
+     * @return
+     */
+    private static String byteify(String code)
     {
         while(code.length() != 8)
             code = "0" + code;

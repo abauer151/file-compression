@@ -1,32 +1,23 @@
-import javax.swing.filechooser.FileSystemView;
 import java.io.*;
+import java.util.Map;
 
 
 public class Main
 {
     public static void main(String[] args) throws IOException
     {
-        //System.out.println((char)Integer.parseInt("hhh", 2));
-//        byte b = (byte) 01100011;
-//        char c = (char)b;
-//        byte back = (byte)c;
-        //System.out.println(Integer.toBinaryString('c'));
-        File home = FileSystemView.getFileSystemView().getHomeDirectory();
-        System.out.println(home.getAbsolutePath());
+        File input = new File("short.txt");
+        File compressed = new File("/Users/aidanbauer/Desktop/compressed.txt");
+        File output = new File("output.txt");
 
-       // File in = new File("out.txt");
-      //  FileCompressor.encode(in, "out");
-//        File bin = new File("binary.txt");
-//        File out = new File("output.txt");
-//        Map<Character, Integer> counts = FileCompression.count(in);
-//        HuffmanTree huffmanTree = new HuffmanTree(counts);
-//        System.out.println(huffmanTree.generateDot());
-//        Map<Character, String> map = huffmanTree.mapEncodings();
-//        FileCompression.writeEncodings(map, in, bin);
-//        FileCompression.decode(map, bin, out);
+        Map<Character, Integer> counts = FileCompressor.count(input);
+        System.out.println(counts.toString());
 
+        HuffmanTree tree = new HuffmanTree(input);
+        //System.out.println(tree.generateDot());
 
-
+        FileCompressor.encode(input, "compressed");
+        FileCompressor.decode(counts, new File("/Users/aidanbauer/Desktop/compressed.txt"), output);
     }
 
 }

@@ -1,3 +1,5 @@
+import java.io.File;
+import java.io.IOException;
 import java.util.*;
 
 /**
@@ -15,6 +17,17 @@ public class HuffmanTree
      */
     public HuffmanTree(Map<Character, Integer> counts)
     {
+        buildHuffmanTree(counts);
+    }
+
+    /**
+     * Builds a Huffman Tree from the frequencies of characters in the given file
+     * @param input
+     * @throws IOException
+     */
+    public HuffmanTree(File input) throws IOException
+    {
+        Map<Character, Integer> counts = FileCompressor.count(input);
         buildHuffmanTree(counts);
     }
 
@@ -77,7 +90,9 @@ public class HuffmanTree
     public String generateDot()
     {
         StringBuilder dot = new StringBuilder("digraph d {\n");
-        traverseDown(root, dot);
+
+        if(root!= null)
+            traverseDown(root, dot);
 
         return dot.toString() + "}";
     }
@@ -100,7 +115,6 @@ public class HuffmanTree
             dot.append("\t\"" + node.toString() + "\" -> \"" + node.rightChild.toString() + "\"\n");
             traverseDown(node.rightChild, dot);
         }
-
     }
 
     /**
@@ -109,6 +123,8 @@ public class HuffmanTree
      */
     public Map<Character, String> mapEncodings()
     {
+        if(root == null)
+            return new HashMap<>();
         Map<Character, String> encodings = new HashMap<>();
         addEncodings(root, new StringBuilder(), encodings);
         return encodings;
