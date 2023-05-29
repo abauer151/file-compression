@@ -12,9 +12,15 @@ public class Tester
 //        System.out.println(Integer.toBinaryString(num));
         //System.out.println(FileCompressor.byteify(Integer.toBinaryString('\u0007')));
 
-        PrintWriter writer = new PrintWriter("/Users/aidanbauer/Desktop/the-file-name.txt", "UTF-8");
-        writer.write("The first line");
-        writer.write("The second line");
-        writer.close();
+//        PrintWriter writer = new PrintWriter("/Users/aidanbauer/Desktop/the-file-name.txt", "UTF-8");
+//        writer.write("The first line");
+//        writer.write("The second line");
+//        writer.close();
+//        System.out.print("*");
+//        System.out.print("\r");
+//        System.out.print("*");
+        System.out.println("\\t".equals("   "));
+//        System.out.println("Good Morning Geeks! \r How are you all?  ");
+        System.out.println(Integer.parseInt(String.valueOf('1')));
     }
 }

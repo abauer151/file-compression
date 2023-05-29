@@ -88,11 +88,11 @@ public class FileCompressor
             //Turn into binary using encodings
             binary.append(encodings.get(next));
         }
-        System.out.println(binary);
 
-//        //Writes character frequency information so the file can be decoded
-//        for(Map.Entry<Character, Integer> entry: counts.entrySet())
-//            out.write((char)Integer.parseInt(String.valueOf(entry.getKey())) + "" + entry.getValue());
+        //Writes character frequency information so the file can be decoded
+        for(Map.Entry<Character, Integer> entry: counts.entrySet())
+            out.write(entry.getKey() + "-x-" + entry.getValue() + "-x-");
+        out.write("*I-x-");
 
         //Take 8 bits of binary at a time, that we encoded from the input file, and write to the
         // output file as the character representation of each byte to save space
@@ -106,14 +106,41 @@ public class FileCompressor
     }
 
     /**
-     * Decodes a compressed file using counts
-     * @param counts frequency of character occurrences in original file
+     * Decodes a compressed file
      * @param binaryEncoding file to be decompressed
      * @param output location to decompress file
      * @throws FileNotFoundException
      */
-    public static void decode(Map<Character, Integer> counts, File binaryEncoding, File output) throws FileNotFoundException
+    public static void decode(File binaryEncoding, File output) throws FileNotFoundException
     {
+        //Reads compressed file
+        Scanner scanner = new Scanner(binaryEncoding);
+        scanner.useDelimiter("-x-");
+
+        //Write uncompressed text to output
+        PrintWriter out = new PrintWriter(output);
+
+        //Uncompress into binary
+        StringBuilder binary = new StringBuilder();
+
+        //Read character frequency information
+        Map<Character, Integer> counts = new HashMap<>();
+
+        while(scanner.hasNext())
+        {
+            String next = scanner.next();
+            System.out.println(next.charAt(0));
+
+            //Two stars mark the end of frequency info
+            if(next.equals("*I"))
+                break;
+
+            String nextnext = scanner.next();
+
+            System.out.println("*" + next + "*");
+            counts.put(next.charAt(0), Integer.parseInt(nextnext));
+        }
+
         //Uses counts to generate encodings
         HuffmanTree huffmanTree = new HuffmanTree(counts);
         Map<Character, String> encodings = huffmanTree.mapEncodings();
@@ -123,16 +150,10 @@ public class FileCompressor
         for(Map.Entry<Character, String> entry : encodings.entrySet())
             decodings.put(entry.getValue(), entry.getKey());
 
-        //Reads compressed file
-        Scanner scanner = new Scanner(binaryEncoding);
         scanner.useDelimiter("");
-
-        //Write uncompressed text to output
-        PrintWriter out = new PrintWriter(output);
-
-        //Uncompress into binary
-        StringBuilder binary = new StringBuilder();
-
+        scanner.next();
+        scanner.next();
+        scanner.next();
         //Read compressed file
         while(scanner.hasNext() || scanner.hasNextLine())
         {
