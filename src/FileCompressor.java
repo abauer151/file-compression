@@ -129,7 +129,6 @@ public class FileCompressor
         while(scanner.hasNext())
         {
             String next = scanner.next();
-            System.out.println(next.charAt(0));
 
             //Two stars mark the end of frequency info
             if(next.equals("*I"))
@@ -137,7 +136,6 @@ public class FileCompressor
 
             String nextnext = scanner.next();
 
-            System.out.println("*" + next + "*");
             counts.put(next.charAt(0), Integer.parseInt(nextnext));
         }
 
@@ -173,7 +171,6 @@ public class FileCompressor
             String code = FileCompressor.byteify(Integer.toBinaryString(next));
             binary.append(code);
         }
-        System.out.println(binary);
 
         //Decode binary to original data
         for(int leftBound = 0, rightBound = 1; rightBound <= binary.length(); rightBound++)
